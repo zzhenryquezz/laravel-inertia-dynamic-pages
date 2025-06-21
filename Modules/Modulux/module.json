@@ -1,0 +1,11 @@
+{
+    "name": "Modulux",
+    "alias": "modulux",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Modulux\\Providers\\ModuluxServiceProvider"
+    ],
+    "files": []
+}
