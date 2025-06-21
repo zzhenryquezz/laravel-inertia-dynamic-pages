@@ -32,18 +32,13 @@ class ResourceServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        $path = config('modulux.dashboard.path', 'admin');
-        
         foreach (ResourceRegistry::all() as $resource) {
-
-            $routes = $resource->getRoutes();
             // add index, show, create, edit, store, update, destroy methods to the resource
-            foreach ($routes as $route) {
+            foreach ($resource->routes as $route) {
                 $method = strtolower($route['method']); 
                 $callback = $route['callback'];
 
-                 Route::{$method}($path . $route['path'], $callback)
-                    ->name($path . "." . $route['name'])
+                 Route::{$method}($route['path'], $callback)
                     ->middleware('web')
                     ->middleware(ModuluxMiddleware::class);
             }

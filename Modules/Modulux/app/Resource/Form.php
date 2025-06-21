@@ -6,9 +6,9 @@ class Form
 {
     protected string $_action = ''; 
     protected string $_method = 'POST';
-    protected ?string $_title;
-    protected ?string $_description;
-    protected ?string $_backUrl;
+    protected ?string $_title = null;
+    protected ?string $_description = null;
+    protected ?array $_back = null;
 
     /**
      * @var FormField[]
@@ -60,9 +60,12 @@ class Form
         return $this;
     }
 
-    public function backUrl(string $backUrl): self
+    public function back(string $href, ?string $label): self
     {
-        $this->_backUrl = $backUrl;
+        $this->_back = [
+            'href' => $href,
+            'label' => $label,
+        ];
 
         return $this;
     }
@@ -104,11 +107,11 @@ class Form
     public function toArray(): array
     {
         return [
-            'title' => $this->_title,
-            'description' => $this->_description,
-            'backUrl' => $this->_backUrl ?? null,
-            'action' => $this->_action,
-            'method' => $this->_method,
+            'title' => $this->_title ?? null,
+            'description' => $this->_description ?? null,
+            'back' => $this->_back ? $this->_back : null,
+            'action' => $this->_action ?? '',
+            'method' => $this->_method ?? 'POST',
             'fields' => array_map(fn(FormField $f) => $f->toArray(), $this->_fields),
         ];
     }

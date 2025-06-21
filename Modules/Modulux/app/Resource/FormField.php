@@ -6,7 +6,7 @@ class FormField
 {
     public string $_id = '';
     public string $_name = '';
-    public $_value = '';
+    public $_value;
     public string $_component = 'CFormTextField';
     public string $_rules = '';
     public array $_props = [];
@@ -67,14 +67,19 @@ class FormField
 
     public function toArray(): array
     {
-        return [
+        $result =  [
             'id' => $this->_id,
             'name' => $this->_name,
             'component' => $this->_component,
-            'value' => $this->_value,
             'props' => $this->_props,
             'rules' => $this->_rules,
         ];
+
+        if ($this->_value !== null) {
+            $result['value'] = $this->_value;
+        }
+
+        return $result;
     }
 
 

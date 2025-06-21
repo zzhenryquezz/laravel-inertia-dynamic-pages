@@ -38,6 +38,13 @@ class Controller
      * Observers for the resource, can be used to handle events.
      * @var array
      */
+    public array $routes = [];
+
+
+    /**
+     * Observers for the resource, can be used to handle events.
+     * @var array
+     */
     protected array $observers = [];
 
     public function __construct($model)
@@ -63,12 +70,8 @@ class Controller
         return $form;
     }
 
-    public function index()
-    {
-        $model = $this->model;
-        $items = $model::query()->paginate(20);
-
-        $table = new Table();
+    protected function resolveTable($table = null){
+        $table = $table ?? new Table();
 
         $table
             ->columns([
@@ -99,29 +102,36 @@ class Controller
                 $table = $observer['handle']($table);
             });
 
+        return $table;
+    }
 
+    protected function resolveForm(?Form $form = null): Form
+    {
+        $form = $form ?? new Form();
 
-        $tableArray = $table->toArray();
+        $form = $this->form($form);
+
+        // handle observers
+        collect($this->observers)->filter(fn($o) => $o['name'] === 'form')
+            ->each(function ($observer) use ($form) {
+                $form = $observer['handle']($form);
+            });
+
+        return $form;
+    }
+
+    public function index()
+    {
+        $model = $this->model;
+        $page = $model::query()->paginate(20);
+
+        $table = $this->resolveTable();
+
+        $table->items($page->items());
 
         return Inertia::render('modulux::Index', [
-            'title' => $this->labels['display_name_plural'],
-            'path' => '/' . $this->labels['kebab_plural'],
-            'columns' => $tableArray['columns'],
-            'actions' => $tableArray['actions'],
-            'add-new-href' => '/' . $this->labels['kebab_plural'] . '/create',
-            'breadcrumbs' => [
-                [
-                    'title' => __($this->labels['display_name_plural']),
-                    'href' => '/' . $this->labels['kebab_plural'],
-                ],
-            ],
-            'items' => $items->items(),
-            'meta' => [
-                'total' => $items->total(),
-                'per_page' => $items->perPage(),
-                'current_page' => $items->currentPage(),
-                'last_page' => $items->lastPage(),
-            ],
+            'table' => $table->toArray(),
+            'add-new-href' => $this->routes['create']['path'],
         ]);
     }
 
@@ -130,30 +140,50 @@ class Controller
         $form = new Form();
 
         $form
-            ->action('/' . $this->labels['kebab_plural'])
+            ->action($this->routes['store']['path'])
             ->method('POST')
             ->title(__('add_new'))
-            ->description(__('create_entity', [$this->labels['display_name']]));
+            ->description(__('create_entity', [$this->labels['display_name']]))
+            ->back($this->routes['index']['path'], __('back'));
 
-        $form = $this->form($form);
+        $form = $this->resolveForm($form);
 
-        return Inertia::render('modulex::Form', $form->toArray());
+        return Inertia::render('modulux::Create', [
+            'form' => $form->toArray(),
+        ]);
     }
 
-    public function store(Request $request)
+    public function store()
     {
-        $form = new Form();
-        $form = $this->form($form);
-
-        $schema = $form->getLaravelRules();
-        $data = $request->validate($schema);
-
-        $model = $this->model;
-        $model::create($data);
-
-        return redirect()
-            ->route($this->labels['kebab_plural'] . '.index')
-            ->with('success', __('created_successfully'));
+        try {
+            $request = request();
+            $form = $this->resolveForm();
+    
+            $schema = $form->getLaravelRules();
+            $data = $request->validate($schema);
+    
+            $model = $this->model;
+            $model::create($data);
+    
+            return redirect($this->routes['index']['path'])
+                ->with('success', __('created_successfully'));
+        } catch (\Throwable $th) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('alerts', [
+                    [
+                        'type' => 'error',
+                        'title' => __('error'),
+                        'description' => __('failed_to_create'),
+                    ],
+                    [
+                        'type' => 'error',
+                        'title' => __('exception'),
+                        'description' => $th->getMessage(),
+                    ],
+                ]);
+        }
     }
 
     public function edit($id)
@@ -168,7 +198,7 @@ class Controller
             ->method('PATCH')
             ->title(__('edit'))
             ->description(__('edit_entity', [$this->labels['display_name']]))
-            ->backUrl('/' . $this->labels['kebab_plural']);
+            ->back($this->routes['index']['path'], __('back'));
 
         $form = $this->form($form);
 

@@ -18,6 +18,11 @@ class Table
      * @return TableAction[]
      */
     protected array $_actions = [];
+    
+    /**
+     * @return array[]
+     */
+    protected array $_items = [];
 
     /**     *
      * @param array $columns
@@ -39,12 +44,9 @@ class Table
         return $this;
     }
 
-    /**
-     * @param array $actions
-     */
-    public function actions(array $actions): self
+    public function items(array $items): self
     {
-        $this->_actions = $actions;
+        $this->_items = $items;
 
         return $this;
     }
@@ -61,7 +63,7 @@ class Table
         return [
             'columns' => array_map(fn(TableColumn $column) => $column->toArray(), $this->_columns),
             'filters' => array_map(fn(TableFilter $filter) => $filter->toArray(), $this->_filters),
-            'actions' => array_map(fn(TableAction $action) => $action->toArray(), $this->_actions),
+            'items' => $this->_items,
         ];
     }
 }

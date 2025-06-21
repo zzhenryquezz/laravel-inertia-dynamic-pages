@@ -52,31 +52,32 @@ const props = defineProps({
     },
 })
 
-const formatedColumns = props.columns.map((c) => {
-    if (!c.cell) {
+const formatedColumns = JSON.parse(JSON.stringify(props.columns))
+    .map((c: TableColumn<TData, TValue>) => {
+        if (!c.cell) {
+            return {
+                ...c,
+                cell: ({ getValue }) => {
+                    const cellValue = getValue() as string;
+
+                    return h('span', { class: 'text-sm' }, cellValue);
+                },
+            } as ColumnDef<TData, TValue>;
+        }
+
         return {
             ...c,
-            cell: ({ getValue }) => {
-                const cellValue = getValue() as string;
+            cell: ({ row, getValue }) => {
+                const cellProps = c.cell.props || {};
 
-                return h('span', { class: 'text-sm' }, cellValue);
+                cellProps.row = row.original;
+                cellProps.column = c.id;
+                cellProps.value = getValue();
+                
+                return h(resolveComponent(c.cell.component), cellProps);
             },
         } as ColumnDef<TData, TValue>;
-    }
-
-    return {
-        ...c,
-        cell: ({ row, getValue }) => {
-            const cellProps = c.cell.props || {};
-
-            cellProps.row = row.original;
-            cellProps.column = c.id;
-            cellProps.value = getValue();
-            
-            return h(resolveComponent(c.cell.component), cellProps);
-        },
-    } as ColumnDef<TData, TValue>;
-})
+    })
 const table = useVueTable({
     get data() { return props.items },
     get columns() { return formatedColumns },

@@ -17,6 +17,7 @@ class ModuluxMiddleware
         $resources = ResourceRegistry::all(); 
 
         Inertia::share([
+            'alerts' => session('alerts', []),
             'modulux' => [
                 'resources' => collect($resources)
                     ->map(fn ($r) => [
@@ -24,6 +25,12 @@ class ModuluxMiddleware
                     ])
                     ->values()
                     ->all(),
+                'sidebar' => [
+                    'links' => collect($resources)
+                        ->map(fn ($r) => $r->getSidebarLink())
+                        ->values()
+                        ->all(),
+                ]
             ],
         ]);
 

@@ -46,6 +46,10 @@ const page = usePage<any>();
 const open = useLocalStorage('layout:sidebar', true);
 const links: SidebarItem[] = [];
 
+page.props.modulux?.sidebar?.links.forEach((item: any) => {
+    links.push(item);
+});
+
 </script>
 <template>
     <Sidebar

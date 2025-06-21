@@ -1,0 +1,11 @@
+{
+    "add_new": "Add New",
+    "create_entity": "Create :0",
+    "submit": "Submit",
+    "back": "Back",
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "confirm_password": "Confirm Password",
+    "users": "Users"
+}

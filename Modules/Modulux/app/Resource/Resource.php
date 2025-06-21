@@ -27,71 +27,68 @@ class Resource
      * @var Contrloller
      */
     protected $controller;
+    
+    /**
+     * Admin path
+     *
+     * @var string
+     */
+    protected string $path;
+
+     /**
+     * Observers for the resource, can be used to handle events.
+     * @var array
+     */
+    public array $routes = [];
 
     public function __construct()
     {
+        $this->path = config('modulux.dashboard.path', 'admin');
+
         $this->controller = new Controller($this->model);
+
         $this->controller->on('table', function (Table $table) {
             return $this->table($table);
         });
+        
+        $this->controller->on('form', function (Form $form) {
+            return $this->form($form);
+        });
+
+        $this->routes = [
+            'index' => [
+                'path' => '/' . $this->path . '/' . Str::kebab(Str::plural($this->name)),
+                'method' => 'GET',
+                'callback' => fn(...$args) => $this->controller->index(...$args)
+            ],
+            'create' => [
+                'path' => '/' . $this->path . '/' . Str::kebab(Str::plural($this->name)) . '/create',
+                'method' => 'GET',
+                'callback' => fn(...$args) => $this->controller->create(...$args)
+            ],
+            'store' => [
+                'path' => '/' . $this->path . '/' . Str::kebab(Str::plural($this->name)),
+                'method' => 'POST',
+                'callback' => fn(...$args) => $this->controller->store(...$args)
+            ],
+            'edit' => [
+                'path' => $this->path . '/' . Str::kebab(Str::plural($this->name)) . '/{id}/edit',
+                'method' => 'GET',
+                'callback' => fn(...$args) => $this->controller->edit(...$args)
+            ],
+            'update' => [
+                'path' => $this->path . '/' . Str::kebab(Str::plural($this->name)) . '/{id}',
+                'method' => 'PUT',
+                'callback' => fn(...$args) => $this->controller->update(...$args)
+            ],
+        ];
+
+        $this->controller->routes = $this->routes;
     }
 
     public function getName(): string
     {
         return $this->name;
-    }
-
-    public function getRoutes(): array
-    {
-        $plural = Str::plural($this->name);
-        $kebabPlural = Str::kebab($plural);
-
-        $routes = [
-            [
-                'path' => '/' . $kebabPlural,
-                'name' => $plural . '.index',
-                'method' => 'GET',
-                'callback' => fn(...$args) => $this->controller->index(...$args)
-            ],
-            [
-                'path' => '/' . $kebabPlural . '/create',
-                'name' => $plural . '.create',
-                'method' => 'GET',
-                'callback' => fn(...$args) => $this->controller->create(...$args)
-            ],
-            [
-                'path' => '/' . $kebabPlural . '/{id}',
-                'name' => $plural . '.show',
-                'method' => 'GET',
-                'callback' => fn(...$args) => $this->controller->show(...$args)
-            ],
-            [
-                'path' => '/' . $kebabPlural . '/{id}/edit',
-                'name' => $plural . '.edit',
-                'method' => 'GET',
-                'callback' => fn(...$args) => $this->controller->edit(...$args)
-            ],
-            [
-                'path' => '/' . $kebabPlural,
-                'name' => $plural . '.store',
-                'method' => 'POST',
-                'callback' => fn(...$args) => $this->controller->store(...$args)
-            ],
-            [
-                'path' => '/' . $kebabPlural . '/{id}',
-                'name' => $plural . '.update',
-                'method' => 'PUT',
-                'callback' => fn(...$args) => $this->controller->update(...$args)
-            ],
-            [
-                'path' => '/' . $kebabPlural . '/{id}',
-                'name' => $plural . '.destroy',
-                'method' => 'DELETE',
-                'callback' => fn(...$args) => $this->controller->destroy(...$args)
-            ]
-        ];
-
-        return $routes;
     }
 
     public function table(Table $table): Table
@@ -102,5 +99,14 @@ class Resource
     public function form(Form $form): Form
     {
         return $form;
+    }
+
+    public function getSidebarLink(): array
+    {
+        return [
+            'title' => $this->getName(),
+            'icon' => 'Circle',
+            'href' => $this->routes['index']['path'],
+        ];
     }
 }

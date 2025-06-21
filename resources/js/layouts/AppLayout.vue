@@ -6,9 +6,14 @@ interface Props {
     breadcrumbs?: BreadcrumbItemType[];
 }
 
-withDefaults(defineProps<Props>(), {
-    breadcrumbs: () => [],
-});
+defineProps({
+    breadcrumbs: {
+        type: Array as () => BreadcrumbItemType[],
+        default: () => []
+    }
+})
+
+
 </script>
 
 <template>

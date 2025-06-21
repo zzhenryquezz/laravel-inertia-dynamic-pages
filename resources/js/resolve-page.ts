@@ -14,6 +14,11 @@ export function resolvePage(name: string) {
         pageName = `../../Modules/${upperFirst(moduleName)}/resources/js/pages/${page}.vue`;
     }
 
+    if (!allPages[pageName]) {
+        console.warn(`Page not found: ${pageName}`);
+        // throw new Error(`Page not found: ${pageName}`);
+    }
+
 
     return resolvePageComponent<DefineComponent>(pageName, allPages);
 }
