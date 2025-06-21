@@ -128,10 +128,3 @@ To create a custom resource that supports dynamic table and form generation and 
 
 See `TagResource` and `UserResource` in `app/Resources/` for real examples.
 
-## Contributing
-
-Contributions and feedback are welcome! Please open issues or pull requests to help improve the project.
-
----
-
-**Note:** This project is not affiliated with Filament or its maintainers. It is an independent experiment to explore similar concepts with a different tech stack.
