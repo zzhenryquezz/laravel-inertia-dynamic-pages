@@ -4,6 +4,7 @@ namespace Modules\Modulux\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class ModuluxController extends Controller
 {
@@ -12,7 +13,9 @@ class ModuluxController extends Controller
      */
     public function index()
     {
-        return view('modulux::index');
+        return Inertia::render('modulux::Index', [
+            'moduluxes' => [],
+        ]);
     }
 
     /**

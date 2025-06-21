@@ -41,6 +41,7 @@
 
         @routes
         @vite(['resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
+        @vite(\Nwidart\Modules\Module::getAssets())
         @inertiaHead
     </head>
     <body class="font-sans antialiased">
