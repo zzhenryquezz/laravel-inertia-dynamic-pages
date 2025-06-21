@@ -41,7 +41,31 @@ class Resource
      */
     public array $routes = [];
 
-    public function __construct()
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function table(Table $table): Table
+    {
+        return $table;
+    }
+
+    public function form(Form $form): Form
+    {
+        return $form;
+    }
+
+    public function getSidebarLink(): array
+    {
+        return [
+            'title' => $this->getName(),
+            'icon' => 'Circle',
+            'href' => $this->routes['index']['path'],
+        ];
+    }
+
+    public function boot()
     {
         $this->path = config('modulux.dashboard.path', 'admin');
 
@@ -89,29 +113,5 @@ class Resource
         ];
 
         $this->controller->routes = $this->routes;
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    public function table(Table $table): Table
-    {
-        return $table;
-    }
-
-    public function form(Form $form): Form
-    {
-        return $form;
-    }
-
-    public function getSidebarLink(): array
-    {
-        return [
-            'title' => $this->getName(),
-            'icon' => 'Circle',
-            'href' => $this->routes['index']['path'],
-        ];
     }
 }

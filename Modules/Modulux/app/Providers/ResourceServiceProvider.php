@@ -33,6 +33,7 @@ class ResourceServiceProvider extends ServiceProvider
     public function boot(): void
     {
         foreach (ResourceRegistry::all() as $resource) {
+            $resource->boot();
             // add index, show, create, edit, store, update, destroy methods to the resource
             foreach ($resource->routes as $route) {
                 $method = strtolower($route['method']); 
