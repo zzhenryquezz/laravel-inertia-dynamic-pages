@@ -15,6 +15,17 @@ class Form
      */
     protected array $_fields = [];
 
+    public string $operation = 'create'; // default operation
+
+    /**
+     * Form constructor.
+     *
+     * @param string $operation
+     */
+    public function __construct(string $operation = '') {
+        $this->operation = $operation;
+    }
+
     public static function make(string $action): self
     {
         $form = new self();

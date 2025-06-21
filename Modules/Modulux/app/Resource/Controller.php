@@ -148,7 +148,7 @@ class Controller
 
         $form = $this->resolveForm($form);
 
-        return Inertia::render('modulux::Create', [
+        return Inertia::render('modulux::Form', [
             'form' => $form->toArray(),
         ]);
     }
@@ -157,7 +157,8 @@ class Controller
     {
         try {
             $request = request();
-            $form = $this->resolveForm();
+            $form = new Form('store');
+            $form = $this->resolveForm($form);
     
             $schema = $form->getLaravelRules();
             $data = $request->validate($schema);
@@ -188,53 +189,92 @@ class Controller
 
     public function edit($id)
     {
+       
         $model = $this->model;
         $item = $model::findOrFail($id);
 
-        $form = new Form();
+        $form = new Form('edit');
+        $action = $this->routes['update']['path'];
+        $action = str_replace('{id}', $item->id, $action);
 
         $form
-            ->action('/' . $this->labels['kebab_plural'] . '/' . $item->id)
+            ->action($action)
             ->method('PATCH')
             ->title(__('edit'))
             ->description(__('edit_entity', [$this->labels['display_name']]))
             ->back($this->routes['index']['path'], __('back'));
 
-        $form = $this->form($form);
-
+        $form = $this->resolveForm($form);
         
         $form->setValues($item->toArray());
         
-        return Inertia::render('Dynamic/Form', $form->toArray());
+        return Inertia::render('modulux::Form', [
+            'form' => $form->toArray(),
+        ]);
     }
 
-    public function update(Request $request, $id)
+    public function update($id)
     {
+        try {
+            $request = request();            
+            $form = new Form('update');
+            $form = $this->form($form);
+    
+            $schema = $form->getLaravelRules();
+    
+            $data = $request->validate($schema);
+    
+            $model = $this->model;
+            $item = $model::findOrFail($id);
+            $item->update($data);
+    
+          return redirect($this->routes['index']['path'])
+                ->with('success', __('updated_successfully'));
+        } catch (\Throwable $th) {
+              return redirect()
+                ->back()
+                ->withInput()
+                ->with('alerts', [
+                    [
+                        'type' => 'error',
+                        'title' => __('error'),
+                        'description' => __('failed_to_update'),
+                    ],
+                    [
+                        'type' => 'error',
+                        'title' => __('exception'),
+                        'description' => $th->getMessage(),
+                    ],
+                ]);
+        }
         
-        $form = new Form();
-        $form = $this->form($form);
-
-        $schema = $form->getLaravelRules();
-
-        $data = $request->validate($schema);
-
-        $model = $this->model;
-        $item = $model::findOrFail($id);
-        $item->update($data);
-
-        return redirect()
-            ->route($this->labels['kebab_plural'] . '.index')
-            ->with('success', __('updated_successfully'));
     }
 
     public function destroy($id)
     {
-        $model = $this->model;
-        $item = $model::findOrFail($id);
-        $item->delete();
-
-        return redirect()
-            ->route($this->labels['kebab_plural'] . '.index')
-            ->with('success', __('deleted_successfully'));
+        try {
+            $model = $this->model;
+            $item = $model::findOrFail($id);
+            $item->delete();
+    
+            return redirect($this->routes['index']['path'])
+                ->with('success', __('deleted_successfully'));
+        } catch (\Throwable $th) {
+             return redirect()
+                ->back()
+                ->withInput()
+                ->with('alerts', [
+                    [
+                        'type' => 'error',
+                        'title' => __('error'),
+                        'description' => __('failed_to_delete'),
+                    ],
+                    [
+                        'type' => 'error',
+                        'title' => __('exception'),
+                        'description' => $th->getMessage(),
+                    ],
+                ]);
+        }
     }
 }

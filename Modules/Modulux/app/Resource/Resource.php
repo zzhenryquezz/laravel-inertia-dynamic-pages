@@ -72,14 +72,19 @@ class Resource
                 'callback' => fn(...$args) => $this->controller->store(...$args)
             ],
             'edit' => [
-                'path' => $this->path . '/' . Str::kebab(Str::plural($this->name)) . '/{id}/edit',
+                'path' => '/' . $this->path . '/' . Str::kebab(Str::plural($this->name)) . '/{id}/edit',
                 'method' => 'GET',
                 'callback' => fn(...$args) => $this->controller->edit(...$args)
             ],
             'update' => [
-                'path' => $this->path . '/' . Str::kebab(Str::plural($this->name)) . '/{id}',
-                'method' => 'PUT',
+                'path' => '/' . $this->path . '/' . Str::kebab(Str::plural($this->name)) . '/{id}',
+                'method' => 'PATCH',
                 'callback' => fn(...$args) => $this->controller->update(...$args)
+            ],
+            'destroy' => [
+                'path' => '/' . $this->path . '/' . Str::kebab(Str::plural($this->name)) . '/{id}',
+                'method' => 'DELETE',
+                'callback' => fn(...$args) => $this->controller->destroy(...$args)
             ],
         ];
 

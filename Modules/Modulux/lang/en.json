@@ -1,11 +1,16 @@
 {
     "add_new": "Add New",
     "create_entity": "Create :0",
+    "edit_entity": "Edit :0",
+    "delete_entity": "Delete :0",
+    "view_entity": "View :0",
+    "entity_list": ":0 List",
     "submit": "Submit",
     "back": "Back",
     "name": "Name",
     "email": "Email",
     "password": "Password",
     "confirm_password": "Confirm Password",
-    "users": "Users"
+    "users": "Users",
+    "edit": "Edit"
 }

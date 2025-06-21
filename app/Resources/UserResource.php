@@ -16,16 +16,21 @@ class UserResource extends Resource
     protected $model = User::class;
     protected $name = 'users';
 
+    public function getSidebarLink(): array
+    {
+        return [
+            'title' => __('users'),
+            'icon' => 'users',
+            'href' => $this->routes['index']['path'],
+        ];
+    }
+
     public function table(Table $table): Table
     {
         return $table->columns([
-            TableColumn::make('id')
-                ->header('ID')
-                ->size(10),
-            TableColumn::make('name')
-                ->header('Name'),
-            TableColumn::make('email')
-                ->header('Email'),
+            TableColumn::make('id')->header('ID')->size(10),
+            TableColumn::make('name')->header('Name'),
+            TableColumn::make('email')->header('Email'),
             TableColumnActions::actions([
                 [
                     'label' => 'Edit',
@@ -44,8 +49,7 @@ class UserResource extends Resource
 
     public function form($form): Form
     {
-        // Define the form structure here
-        return $form->fields([
+        $fields = [
             FormField::make('name')
                 ->component('text-field')
                 ->rules('required|string|max:255|min:2')
@@ -58,31 +62,34 @@ class UserResource extends Resource
                 ->props([
                     'label' => __('email'),
                 ]),
-            FormField::make('password')
-                ->component('text-field')
-                ->rules('required|string|min:8|confirmed')
-                ->props([
-                    'label' => __('password'),
-                    'type' => 'password',
-                    'autocomplete' => 'new-password',
-                ]),
-            FormField::make('password_confirmation')
-                ->component('text-field')
-                ->rules('required|string|min:8')
-                ->props([
-                    'label' => __('confirm_password'),
-                    'type' => 'password',
-                    'autocomplete' => 'new-password',
-                ]),
-        ]);
+        ];
+            
+
+        // operation is edit or update
+        if (in_array($form->operation, ['edit', 'update'])) {
+            return $form->fields($fields);
+        }
+
+        $fields[] = FormField::make('password')
+            ->component('text-field')
+            ->rules('required|string|min:8|confirmed')
+            ->props([
+                'label' => __('password'),
+                'type' => 'password',
+                'autocomplete' => 'new-password',
+            ]);
+
+        $fields[] = FormField::make('password_confirmation')
+            ->component('text-field')
+            ->rules('required|string|min:8')
+            ->props([
+                'label' => __('confirm_password'),
+                'type' => 'password',
+                'autocomplete' => 'new-password',
+            ]);
+
+        return $form->fields($fields);
     }
 
-    public function getSidebarLink(): array
-    {
-        return [
-            'title' => __('users'),
-            'icon' => 'users',
-            'href' => $this->routes['index']['path'],
-        ];
-    }
+    
 }

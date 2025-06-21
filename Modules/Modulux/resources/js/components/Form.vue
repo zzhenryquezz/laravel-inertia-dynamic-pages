@@ -139,7 +139,7 @@ function laravelRulesToZod(rules?: string) {
             continue
         }
 
-        console.warn(`Could not handle rule: ${name}`);
+        console.warn(`rule not handle: ${name}`);
     }
 
     // handle 'required' rule
