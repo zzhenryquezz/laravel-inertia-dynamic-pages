@@ -34,10 +34,13 @@ This is an early-stage experiment. Features and APIs are subject to change as th
    ```sh
    php artisan migrate
    ```
-4. **Start the development server:**
+4. **Enable Modulux module:**
    ```sh
-   php artisan serve
-   npm run dev
+   php artisan module:enable Modulux
+   ```
+5. **Start the development server:**
+   ```sh
+   composer run dev
    ```
 
 ## Creating a Custom Resource (with Table, Form, and Dashboard Link)
