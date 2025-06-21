@@ -1,18 +1,19 @@
 <?php
 
-namespace App\Dynamic;
+namespace Modules\Modulux\Resource;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
-abstract class Controller
+class Controller
 {
     /**
      * The model class for the resource.
-     * @var string
+     * @var Model
      */
-    protected string $modelClass;
+    protected $model;
 
     /**
      * The resource name (for routes, titles, etc).
@@ -33,19 +34,23 @@ abstract class Controller
         'kebab_plural' => null,
     ];
 
-    public function __construct()
-    {
-        $defaults = [
-            'display_name' => Str::ucfirst($this->resourceName),
-            'display_name_plural' => Str::ucfirst(Str::plural($this->resourceName)),
-            'singular' => $this->resourceName,
-            'plural' => Str::plural($this->resourceName),
-            'kebab_singular' => Str::kebab($this->resourceName),
-            'kebab_plural' => Str::kebab(Str::plural($this->resourceName)),
-        ];
+    /**
+     * Observers for the resource, can be used to handle events.
+     * @var array
+     */
+    protected array $observers = [];
 
-        // Allow child classes to override any label by setting $labels property before parent::__construct()
-        $this->labels = array_merge($defaults, array_filter($this->labels));
+    public function __construct($model)
+    {
+        $this->model = $model;
+    }
+
+    public function on(string $event, callable $callback): void
+    {
+        $this->observers[] = [
+            'name' => $event,
+            'handle' => $callback
+        ];
     }
 
     public function table(Table $table): Table
@@ -60,35 +65,45 @@ abstract class Controller
 
     public function index()
     {
-        $model = $this->modelClass;
+        $model = $this->model;
         $items = $model::query()->paginate(20);
 
         $table = new Table();
 
         $table
-            ->actions([
-                TableAction::make('edit')
-                    ->label(__('edit'))
-                    ->icon('Edit')
-                    ->href('/' . $this->labels['kebab_plural'] . '/{row.id}/edit'),
-                TableAction::make('delete')
-                    ->label(__('delete'))
-                    ->icon('Trash')
-                    ->confirm(true)
-                    ->request('delete:/' . $this->labels['kebab_plural'] . '/{row.id}'),
-            ])
             ->columns([
                 TableColumn::make('id')
                     ->size(10)
                     ->header(__('id'))
                     ->accessorKey('id'),
+                TableColumnActions::actions([
+                    [
+                        'label' => 'Edit',
+                        'icon' => 'edit',
+                        'href' => '/users/{id}/edit',
+                    ],
+                    [
+                        'label' => 'Delete',
+                        'icon' => 'trash',
+                        'confirm' => true,
+                        'request' => 'delete:/users/{id}',
+                    ],
+                ])->size(100),
             ]);
 
         $table = $this->table($table);
 
+        // handle obserers 
+        collect($this->observers)->filter(fn($o) => $o['name'] === 'table')
+            ->each(function ($observer) use ($table) {
+                $table = $observer['handle']($table);
+            });
+
+
+
         $tableArray = $table->toArray();
 
-        return Inertia::render('Dynamic/Table', [
+        return Inertia::render('modulux::Index', [
             'title' => $this->labels['display_name_plural'],
             'path' => '/' . $this->labels['kebab_plural'],
             'columns' => $tableArray['columns'],
@@ -122,7 +137,7 @@ abstract class Controller
 
         $form = $this->form($form);
 
-        return Inertia::render('Dynamic/Form', $form->toArray());
+        return Inertia::render('modulex::Form', $form->toArray());
     }
 
     public function store(Request $request)
@@ -133,7 +148,7 @@ abstract class Controller
         $schema = $form->getLaravelRules();
         $data = $request->validate($schema);
 
-        $model = $this->modelClass;
+        $model = $this->model;
         $model::create($data);
 
         return redirect()
@@ -143,7 +158,7 @@ abstract class Controller
 
     public function edit($id)
     {
-        $model = $this->modelClass;
+        $model = $this->model;
         $item = $model::findOrFail($id);
 
         $form = new Form();
@@ -173,7 +188,7 @@ abstract class Controller
 
         $data = $request->validate($schema);
 
-        $model = $this->modelClass;
+        $model = $this->model;
         $item = $model::findOrFail($id);
         $item->update($data);
 
@@ -184,7 +199,7 @@ abstract class Controller
 
     public function destroy($id)
     {
-        $model = $this->modelClass;
+        $model = $this->model;
         $item = $model::findOrFail($id);
         $item->delete();
 

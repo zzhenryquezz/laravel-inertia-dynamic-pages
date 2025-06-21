@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Dynamic;
+namespace Modules\Modulux\Resource;
 
 class TableColumn
 {
@@ -8,6 +8,7 @@ class TableColumn
     public string $header = '';
     public string $accessorKey = '';
     public int $size;
+    public ?TableCell $cell = null;
 
     public static function make(string $id): self
     {
@@ -41,6 +42,13 @@ class TableColumn
         return $this;
     }
 
+    public function cell(TableCell $cell): self
+    {
+        $this->cell = $cell;
+
+        return $this;
+    }
+
     public function toArray(): array
     {
         return [
@@ -48,6 +56,7 @@ class TableColumn
             'header' => $this->header,
             'accessorKey' => $this->accessorKey,
             'size' => $this->size ?? 150,
+            'cell' => $this->cell ? $this->cell->toArray() : null,
         ];
     }
 

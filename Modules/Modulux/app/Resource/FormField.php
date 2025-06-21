@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Dynamic;
+namespace Modules\Modulux\Resource;
 
 class FormField
 {

@@ -8,14 +8,26 @@ import { resolvePage } from './resolve-page';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
+const booters = import.meta.glob('../../Modules/**/resources/js/start.ts', {
+    eager: true
+})
+
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
     resolve: (name) => resolvePage(name),
     setup({ el, App, props, plugin }) {
-        createApp({ render: () => h(App, props) })
+        const app = createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(ZiggyVue)
-            .mount(el);
+
+        Object.values(booters).forEach((booter: any) => {
+                if (booter.default) {
+                    booter.default(app);
+                }
+            }
+        )
+
+        app.mount(el);
     },
     progress: {
         color: '#4B5563',

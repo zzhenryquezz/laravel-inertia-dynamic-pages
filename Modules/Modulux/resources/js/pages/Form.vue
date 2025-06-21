@@ -5,8 +5,7 @@ import { BreadcrumbItem } from '../layouts/AppLayout/AppLayoutHeader.vue';
 import AppLayoutPage from '../layouts/AppLayout/AppLayoutPage.vue';
 
 interface Props {
-    items: any[];
-    columns: any[];
+    item: any[];
     breadcrumbs?: BreadcrumbItem[];
 }
 
@@ -17,7 +16,7 @@ defineProps<Props>();
 <template>
     <AppLayout :breadcrumbs>
         <AppLayoutPage>
-            <Table :items :columns />
+            {{  item }}
         </AppLayoutPage>
     </AppLayout>
 </template>
